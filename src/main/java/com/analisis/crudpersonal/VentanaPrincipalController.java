@@ -15,8 +15,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 
-public class HelloController {
+public class VentanaPrincipalController {
 
     @FXML
     private ListView<String> listaPersonas;
@@ -28,10 +29,14 @@ public class HelloController {
     @FXML
     private Button botonEliminar; // Referencia al botón "Eliminar Persona"
 
+    @FXML
+    private Button botonVerVehiculos;
+
+
     private ConexionMysql conexionMysql;
     private ObservableList<String> listaObservable;
 
-    public HelloController() {
+    public VentanaPrincipalController() {
         this.conexionMysql = new ConexionMysql();
         this.listaObservable = FXCollections.observableArrayList();
     }
@@ -39,7 +44,6 @@ public class HelloController {
     @FXML
     public void initialize() {
         cargarDatosEnLista();
-
         // Inicializar acciones para los botones
         botonAgregar.setOnAction(event -> {
             agregarPersona();
@@ -50,9 +54,10 @@ public class HelloController {
         });
 
         botonEliminar.setOnAction(event -> {
-            System.out.println("Botón 'Eliminar Persona' presionado.");
-            // Lógica para eliminar una persona seleccionada
             eliminarPersona();
+        });
+      botonVerVehiculos.setOnAction(event -> {
+            verVehiculos();
         });
     }
 
@@ -68,9 +73,9 @@ public class HelloController {
 
             while (rs.next()) {
                 String datos = "ID: " + rs.getInt("id") +
-                        " | " + rs.getString("nombre") +
-                        " | " + rs.getString("direccion") +
-                        " | " + rs.getString("telefono");
+                        " | Nombre: " + rs.getString("nombre") +
+                        " | Direccion: " + rs.getString("direccion") +
+                        " | Telefono: " + rs.getString("telefono");
                 listaObservable.add(datos);
             }
 
@@ -105,23 +110,22 @@ public class HelloController {
         }
     }
 
-
-    private void editarPersona(){
+    private void editarPersona() {
         // Asegurarnos de que hay algo seleccionado en la lista
         int indiceSeleccionado = listaPersonas.getSelectionModel().getSelectedIndex();
         if (indiceSeleccionado != -1) {
             // Obtener el texto del elemento seleccionado en la vista de lista
             String seleccionado = listaPersonas.getSelectionModel().getSelectedItem();
 
-            // Separar los valores (asumiendo formato: "ID: 1 | Nombre | Dirección | Teléfono")
+            // Separar los valores por "|"
             String[] datos = seleccionado.split("\\|");
 
-            // Extraer y limpiar los datos
+            // Extraer y limpiar los datos eliminando etiquetas
             String idStr = datos[0].trim().replace("ID:", "").trim(); // Por ejemplo: "1"
             int id = Integer.parseInt(idStr); // Convertir "1" a entero
-            String nombre = datos[1].trim();  // Nombre
-            String direccion = datos[2].trim(); // Dirección
-            String telefono = datos[3].trim();  // Teléfono
+            String nombre = datos[1].trim().replace("Nombre:", "").trim();  // Extraer Nombre
+            String direccion = datos[2].trim().replace("Direccion:", "").trim(); // Extraer Dirección
+            String telefono = datos[3].trim().replace("Telefono:", "").trim();  // Extraer Teléfono
 
             // Crear un objeto Persona con los datos extraídos
             Persona persona = new Persona(id, nombre, direccion, telefono);
@@ -187,4 +191,56 @@ public class HelloController {
             alerta.showAndWait();
         }
     }
+
+    private void verVehiculos() {
+        String personaSeleccionada = listaPersonas.getSelectionModel().getSelectedItem();
+
+        if (personaSeleccionada == null) {
+            mostrarAlerta("Error", "Debe seleccionar una persona de la lista.", Alert.AlertType.ERROR);
+            return;
+        }
+
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("VehiculosUsuario.fxml"));
+            Parent root = loader.load();
+
+            // Obtener el controlador y pasarle los datos iniciales
+            VehiculosUsuarioController controlador = loader.getController();
+
+            String seleccionado = listaPersonas.getSelectionModel().getSelectedItem();
+
+            // Separar los valores (asumiendo formato: "ID: 1 | Nombre | Dirección | Teléfono")
+            String[] datos = seleccionado.split("\\|");
+
+            // Extraer y limpiar los datos
+            String idStr = datos[0].trim().replace("ID:", "").trim(); // Por ejemplo: "1"
+            int id = Integer.parseInt(idStr); // Convertir "1" a entero
+            String nombre = datos[1].trim();  // Nombre
+            String direccion = datos[2].trim(); // Dirección
+            String telefono = datos[3].trim();  // Teléfono
+
+            // Crear un objeto Persona con los datos extraídos
+            Persona persona = new Persona(id, nombre, direccion, telefono);
+
+            controlador.inicializarDatosPersona(persona);
+
+            Stage stage = new Stage();
+            stage.setTitle("Vehículos de " + nombre + " (ID: " + id + ")");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo abrir la ventana de Vehículos de Usuario.", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+
 }

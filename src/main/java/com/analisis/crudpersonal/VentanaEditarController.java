@@ -55,7 +55,6 @@ public class VentanaEditarController {
         // Cerrar esta ventana (la ventana de edición)
         botonEditar.getScene().getWindow().hide();
 
-
     }
 
     private void mostrarAlerta(String mensaje, Alert.AlertType tipo) {

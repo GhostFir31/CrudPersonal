@@ -1,6 +1,8 @@
 package com.analisis.crudpersonal;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class ConexionMysql {
@@ -20,7 +22,6 @@ public class ConexionMysql {
         return conexion;
     }
 
-    // 1️⃣ Mostrar todas las personas con sus numeros telefonicos
     public void mostrarPersonasConTelefonos() {
         try {
             String sql = "SELECT p.id, p.nombre, p.direccion, t.telefono FROM personas p " +
@@ -39,7 +40,6 @@ public class ConexionMysql {
         }
     }
 
-    // 2️⃣ Editar una persona y su numero telefonico
     public void editarPersona(int id, String nuevoNombre, String nuevaDireccion, String nuevoTelefono) {
         try {
             // Actualizar datos de la persona
@@ -63,7 +63,6 @@ public class ConexionMysql {
         }
     }
 
-    // 3️⃣ Agregar una persona con su numero telefonico
     public void agregarPersona(String nombre, String direccion, String telefono) {
         try {
             // Insertar en personas
@@ -95,8 +94,9 @@ public class ConexionMysql {
 
     public void eliminarPersona(int id) {
         try {
-            // 1️⃣ Eliminar la persona (los teléfonos se eliminan en cascada por ON DELETE CASCADE)
+
             String sqlEliminar = "DELETE FROM personas WHERE id = ?";
+
             PreparedStatement psEliminar = conexion.prepareStatement(sqlEliminar);
             psEliminar.setInt(1, id);
             int filasAfectadas = psEliminar.executeUpdate();
@@ -111,60 +111,153 @@ public class ConexionMysql {
         }
     }
 
-    public static void main(String[] args) {
+    public List<Vehiculo> obtenerVehiculos() {
+        List<Vehiculo> vehiculos = new ArrayList<>();
+        String query = "SELECT id, nombre, tipo FROM vehiculo";
 
+        try (PreparedStatement ps = conexion.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
 
-        ConexionMysql con = new ConexionMysql();
-        Scanner scanner = new Scanner(System.in);
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String nombre = rs.getString("nombre");
+                String tipo = rs.getString("tipo");
 
-        while (true) {
-            System.out.println("\n📌 Menu:");
-            System.out.println("1. Mostrar personas con telefonos");
-            System.out.println("2. Agregar nueva persona");
-            System.out.println("3. Editar una persona");
-            System.out.println("4. Eliminar una persona");
-            System.out.println("5. Salir");
-            System.out.print("Seleccione una opcion: ");
-            int opcion = scanner.nextInt();
-            scanner.nextLine(); // Limpiar buffer
+                // Creamos el objeto Vehículo con los datos obtenidos
+                Vehiculo vehiculo = new Vehiculo(id, nombre, tipo);
+                vehiculos.add(vehiculo);
+            }
 
-            switch (opcion) {
-                case 1:
-                    con.mostrarPersonasConTelefonos();
-                    break;
-                case 2:
-                    System.out.print("Ingrese el nombre: ");
-                    String nombre = scanner.nextLine();
-                    System.out.print("Ingrese la direccion: ");
-                    String direccion = scanner.nextLine();
-                    System.out.print("Ingrese el numero telefonico: ");
-                    String telefono = scanner.nextLine();
-                    con.agregarPersona(nombre, direccion, telefono);
-                    break;
-                case 3:
-                    System.out.print("Ingrese el ID de la persona a editar: ");
-                    int idEditar = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.print("Nuevo nombre: ");
-                    String nuevoNombre = scanner.nextLine();
-                    System.out.print("Nueva direccion: ");
-                    String nuevaDireccion = scanner.nextLine();
-                    System.out.print("Nuevo numero telefonico: ");
-                    String nuevoTelefono = scanner.nextLine();
-                    con.editarPersona(idEditar, nuevoNombre, nuevaDireccion, nuevoTelefono);
-                    break;
-                case 4:
-                    System.out.print("Ingrese el ID de la persona a eliminar: ");
-                    int idEliminar = scanner.nextInt();
-                    con.eliminarPersona(idEliminar);
-                    break;
-                case 5:
-                    System.out.println("Saliendo del programa...");
-                    scanner.close();
-                    return;
-                default:
-                    System.out.println("⚠️ Opcion no valida.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error al obtener los vehículos: " + e.getMessage());
+        }
+
+        return vehiculos;
+    }
+    public void asociarVehiculoConPersona(int personaId, int vehiculoId) {
+        String query = "INSERT INTO persona_vehiculo (persona_id, vehiculo_id) VALUES (?, ?)";
+        try (Connection con = getConexion();
+             PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setInt(1, personaId);
+            stmt.setInt(2, vehiculoId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Vehiculo> obtenerVehiculosDePersona(int personaId) {
+        List<Vehiculo> vehiculos = new ArrayList<>();
+        String query = "SELECT v.id, v.nombre, v.tipo " +
+                "FROM vehiculo v " +
+                "JOIN persona_vehiculo pv ON v.id = pv.vehiculo_id " +
+                "WHERE pv.persona_id = ?";
+        try (Connection con = getConexion();
+             PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setInt(1, personaId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                vehiculos.add(new Vehiculo(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("tipo")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return vehiculos;
+    }
+
+    public void desasociarVehiculoDePersona(int personaId, int vehiculoId) {
+        String query = "DELETE FROM persona_vehiculo WHERE persona_id = ? AND vehiculo_id = ?";
+        try (Connection con = getConexion();
+             PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setInt(1, personaId);
+            stmt.setInt(2, vehiculoId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void agregarVehiculo(Vehiculo vehiculo) {
+        String query = "INSERT INTO vehiculo (nombre, tipo) VALUES (?, ?)";
+        PreparedStatement preparedStatement = null;
+
+        try {
+            // Configuramos el PreparedStatement para devolver las claves generadas automáticamente
+            preparedStatement = conexion.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, vehiculo.getNombre());
+            preparedStatement.setString(2, vehiculo.getTipo());
+
+            // Ejecutamos la consulta
+            int filasInsertadas = preparedStatement.executeUpdate();
+
+            if (filasInsertadas > 0) {
+                System.out.println("Vehículo agregado exitosamente a la base de datos.");
+
+                // Obtenemos el ID generado automáticamente
+                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int idGenerado = generatedKeys.getInt(1);
+                    vehiculo.setId(idGenerado); // Actualizamos el objeto Vehiculo con su ID
+                    System.out.println("ID generado: " + idGenerado);
+                }
+            } else {
+                System.out.println("No se pudo agregar el vehículo a la base de datos.");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error al agregar el vehículo: " + e.getMessage());
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
+    }
+    public Persona obtenerPersonaPorId(int personaId) {
+        Persona persona = null;
+
+        // Define the query to fetch person details and associated phone numbers
+        String consultaSQL = "SELECT p.id, p.nombre, p.direccion, t.telefono " +
+                "FROM personas p " +
+                "LEFT JOIN telefonos t ON p.id = t.persona_id " +
+                "WHERE p.id = ?";
+
+        try (PreparedStatement preparedStatement = conexion.prepareStatement(consultaSQL)) {
+            preparedStatement.setInt(1, personaId);
+            ResultSet resultado = preparedStatement.executeQuery();
+
+            int id = 0;
+            String nombre = null, direccion = null, telefono = null;
+
+            while (resultado.next()) {
+                id = resultado.getInt("id");
+                nombre = resultado.getString("nombre");
+                direccion = resultado.getString("direccion");
+                telefono = resultado.getString("telefono");
+
+                // Exit the loop after processing the first phone
+                // or override this logic as needed
+                break;
+            }
+
+            // Only create the persona object if we got a result
+            if (nombre != null && direccion != null) {
+                persona = new Persona(id, nombre, direccion, telefono);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error al obtener la persona con ID: " + personaId);
+        }
+
+        return persona;
     }
 }

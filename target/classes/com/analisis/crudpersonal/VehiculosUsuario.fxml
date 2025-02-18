@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="385.0" prefWidth="741.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analisis.crudpersonal.VehiculosUsuarioController">
+   <children>
+      <Button fx:id="botonRegistrar" layoutX="22.0" layoutY="80.0" mnemonicParsing="false" prefHeight="74.0" prefWidth="166.0" text="Registrar Vehiculo Nuevo" />
+      <Button fx:id="botonAgregarVehiculo" layoutX="22.0" layoutY="236.0" mnemonicParsing="false" prefHeight="74.0" prefWidth="166.0" text="Añadir Vehiculo a Usuario" />
+      <ListView fx:id="listaVehiculos" layoutX="218.0" layoutY="52.0" prefHeight="320.0" prefWidth="513.0" />
+      <Label layoutX="193.0" layoutY="14.0" prefHeight="32.0" prefWidth="355.0" text="Vehiculos del Usuario Seleccionado">
+         <font>
+            <Font size="22.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
