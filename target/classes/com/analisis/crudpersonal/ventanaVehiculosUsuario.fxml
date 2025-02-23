@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="385.0" prefWidth="741.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analisis.crudpersonal.VehiculosUsuarioController">
+<AnchorPane prefHeight="385.0" prefWidth="741.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.analisis.crudpersonal.VentanaVehiculosUsuarioController">
    <children>
       <Button fx:id="botonRegistrar" layoutX="22.0" layoutY="80.0" mnemonicParsing="false" prefHeight="74.0" prefWidth="166.0" text="Registrar Vehiculo Nuevo" />
       <Button fx:id="botonAgregarVehiculo" layoutX="22.0" layoutY="236.0" mnemonicParsing="false" prefHeight="74.0" prefWidth="166.0" text="Añadir Vehiculo a Usuario" />

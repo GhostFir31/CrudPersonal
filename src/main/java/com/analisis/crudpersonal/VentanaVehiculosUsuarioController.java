@@ -12,7 +12,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 
-public class VehiculosUsuarioController {
+public class VentanaVehiculosUsuarioController {
     private Persona persona;
     @FXML
     private Button botonRegistrar;

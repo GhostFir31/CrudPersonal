@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.List;
 
 public class VentanaPrincipalController {
 
@@ -202,11 +201,11 @@ public class VentanaPrincipalController {
 
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("VehiculosUsuario.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("VentanaVehiculosUsuario.fxml"));
             Parent root = loader.load();
 
             // Obtener el controlador y pasarle los datos iniciales
-            VehiculosUsuarioController controlador = loader.getController();
+            VentanaVehiculosUsuarioController controlador = loader.getController();
 
             String seleccionado = listaPersonas.getSelectionModel().getSelectedItem();
 
